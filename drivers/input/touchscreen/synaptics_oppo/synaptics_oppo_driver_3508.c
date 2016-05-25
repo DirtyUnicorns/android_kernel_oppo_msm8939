@@ -478,44 +478,43 @@ static int synaptics_tpd_button_init(struct synaptics_ts_data *ts)
     if( syna_properties_kobj )
         ret = sysfs_create_group(syna_properties_kobj, &qrd_properties_attr_group);
     if( !syna_properties_kobj || ret )
-		printk("failed to create board_properties\n");	
+		printk("failed to create board_properties\n");
 
-	err_input_dev_alloc_failed:		
+	err_input_dev_alloc_failed:	
 		return ret;
 }
 
 static int Dot_report_down = 0;
-static void tpd_down(struct synaptics_ts_data *ts,int raw_x, int raw_y, int x, int y, int p) 
+static void tpd_down(struct synaptics_ts_data *ts,int raw_x, int raw_y, int x, int y, int p)
 {
     if( ts && ts->input_dev ){
         input_report_key(ts->input_dev, BTN_TOUCH, 1);
-		input_report_key(ts->input_dev,	BTN_TOOL_FINGER, 1);
-		
-		if(ts->boot_mode == MSM_BOOT_MODE__RECOVERY)
-			input_report_abs(ts->input_dev, ABS_MT_TOUCH_MAJOR, p);
+        input_report_key(ts->input_dev,	BTN_TOOL_FINGER, 1);
+
         input_report_abs(ts->input_dev, ABS_MT_WIDTH_MAJOR, (raw_x+raw_y)/2);
         input_report_abs(ts->input_dev, ABS_MT_POSITION_X, x);
         input_report_abs(ts->input_dev, ABS_MT_POSITION_Y, y);
-		TPD_DEBUG("Synaptics:Down[%4d %4d %4d]\n", x, y, p);	
+        input_report_abs(ts->input_dev, ABS_MT_TOUCH_MAJOR, p);
+		TPD_DEBUG("Synaptics:Down[%4d %4d %4d]\n", x, y, p);
 		if( Dot_report_down == 150 ){
-			TPD_ERR("Synaptics:Down[%4d %4d %4d]\n", x, y, p);		
+			TPD_ERR("Synaptics:Down[%4d %4d %4d]\n", x, y, p);
 			Dot_report_down = 0;
 		}else{
 			Dot_report_down++;
-		} 
+		}
 #ifndef TYPE_B_PROTOCOL
         input_mt_sync(ts->input_dev);
-#endif	
-    }  
+#endif
+    }
 }
 
 static int Dot_report_up = 0;
 static void tpd_up(struct synaptics_ts_data *ts, int raw_x, int raw_y, int x, int y, int p) {	
 	if( ts && ts->input_dev ){
 		input_report_key(ts->input_dev, BTN_TOUCH, 0);
-		TPD_DEBUG("Up[%4d %4d %4d]\n", x, y, p);	
+		TPD_DEBUG("Up[%4d %4d %4d]\n", x, y, p);
 		if( Dot_report_up == 150 ){
-			TPD_ERR("Up[%4d %4d %4d]\n", x, y, p);	
+			TPD_ERR("Up[%4d %4d %4d]\n", x, y, p);
 			Dot_report_up = 0;
 		}else{
 			Dot_report_up++;
@@ -2376,7 +2375,7 @@ static int	synaptics_input_init(struct synaptics_ts_data *ts)
 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, 0, ts->max_y, 0, 0);
 #ifdef TYPE_B_PROTOCOL
 	input_mt_init_slots(ts->input_dev, ts->max_num, 0);
-#endif				
+#endif
 	set_bit(BTN_TOUCH, ts->input_dev->keybit);
 	set_bit(KEY_SEARCH, ts->input_dev->keybit);
 	set_bit(KEY_MENU, ts->input_dev->keybit);
@@ -2384,9 +2383,9 @@ static int	synaptics_input_init(struct synaptics_ts_data *ts)
 	set_bit(KEY_BACK, ts->input_dev->keybit);
 	set_bit(KEY_HOMEPAGE , ts->input_dev->keybit);
 	input_set_drvdata(ts->input_dev, ts);
-	
+
 	if(input_register_device(ts->input_dev)) {
-		TPD_ERR("%s: Failed to register input device\n",__func__);			
+		TPD_ERR("%s: Failed to register input device\n",__func__);
 		input_unregister_device(ts->input_dev);
 		input_free_device(ts->input_dev);	
 		return -1;
